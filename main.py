@@ -1,18 +1,11 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 
-"""
-make this into an ascii meme generator
-"""
-
-
-def consume_image(target, new_w):
-    image = Image.open(target, mode='r').convert('L')
-
+def resize_image(image, new_w):
     orig_w, orig_h = image.size
     ratio = orig_w / orig_h
-    new_h = int(new_w / ratio)
-    new_h = int(new_h * .75)
+    new_h = int((new_w / ratio)*0.55)
+    #new_h = int(new_h * 0.5)
 
     new_img = image.resize((new_w, new_h))
 
@@ -20,14 +13,10 @@ def consume_image(target, new_w):
 
 
 def map_to_ascii(image):
-    #grays = ['@', '#', '%', '*', '=', '+', '-', '!', ';', '.']
-    #grays = ['@', '%', '#', '*', '+', '=', '(', '-', ':', '.']
     grays = '@#%*=+-!:.'
-    #grays = '.:!-+=*%#@'
     trans = []
 
     img_vals = list(image.getdata())
-
 
     for i in range(len(img_vals)):
         tmp = 0
@@ -36,16 +25,58 @@ def map_to_ascii(image):
         trans.append(grays[tmp-1])
 
     return trans
-    
 
+
+def draw_text(img, top_text, bottom_text):
+    draw = ImageDraw.Draw(img)
+    w_img, h_img = img.size
+
+    w_ttxt, h_ttxt = draw.textsize(top_text)
+
+    ux = (w_img - w_ttxt) / 2
+    uy = h_img * 0.02
+
+    #uborder = [(ux-1, uy-1), (ux+w_ttxt, uy+h_ttxt)]
+
+    #draw.rectangle(uborder, fill='black')
+    draw.text((ux, uy), top_text, fill='white')
+
+    w_btxt, h_btxt = draw.textsize(bottom_text)
+
+    bx = (w_img - w_btxt) / 2
+    by = h_img * 0.8
+
+  #  draw.rectangle(bborder, fill='black')
+    draw.text((bx, by), bottom_text, fill='white')
+
+
+"""
+def save_art(img_vals, width):
+    try:
+        with open('file.txt', 'w') as f:
+            for i in range(len(img_vals)):
+                if i % width == 0:
+                    f.write('\n')
+                else:
+                    f.write(img_vals[i])
+    except FileNotFoundError:
+        print('[-] File Not Found')
+"""
 
 def main():
-    
-    image = 'pic.png'
-    new_w = 160
+    img_name = 'picc.png'
+    image = Image.open(img_name, mode='r').convert('L')
 
-    resized_img = consume_image(image, new_w)
-    img_vals = map_to_ascii(resized_img)
+    new_w = 120
+    image = resize_image(image, new_w)
+
+    top_text = 'top text'
+    bottom_text = 'bottom text'
+
+    draw_text(image, top_text, bottom_text)
+
+    img_vals = map_to_ascii(image)
+
     
     for i in range(len(img_vals)):
         if i % new_w == 0:
@@ -53,10 +84,10 @@ def main():
         else:
             print(img_vals[i], end='')
 
+#    save_art(img_vals, new_w)
 
 
 
 
 if __name__ == '__main__':
     main()
-
