@@ -127,3 +127,6 @@ dmypy.json
 .jpeg
 .png
 .gif
+
+#Outputs
+*.txt

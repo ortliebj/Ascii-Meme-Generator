@@ -4,10 +4,11 @@ from PIL import Image, ImageDraw, ImageFont
 def resize_image(image, new_w):
     orig_w, orig_h = image.size
     ratio = orig_w / orig_h
-    new_h = int((new_w / ratio)*0.55)
-    #new_h = int(new_h * 0.5)
+    #Spacing between lines is more than spacing between 
+    #characters, so we make it take a percentage of it
+    new_h = int((new_w / ratio) * 0.55)
 
-    new_img = image.resize((new_w, new_h))
+    new_img = image.resize((new_w, new_h)).convert('L')
 
     return new_img
 
@@ -20,7 +21,6 @@ def map_to_ascii(image):
 
     for i in range(len(img_vals)):
         tmp = 0
-        
         tmp = int(img_vals[i] / 25.5)
         trans.append(grays[tmp-1])
 
@@ -28,29 +28,44 @@ def map_to_ascii(image):
 
 
 def draw_text(img, top_text, bottom_text):
-    draw = ImageDraw.Draw(img)
+    canvas = Image.new('L', img.size, 'black')
+    draw = ImageDraw.Draw(canvas)
+
     w_img, h_img = img.size
-
     w_ttxt, h_ttxt = draw.textsize(top_text)
-
-    ux = (w_img - w_ttxt) / 2
-    uy = h_img * 0.02
-
-    #uborder = [(ux-1, uy-1), (ux+w_ttxt, uy+h_ttxt)]
-
-    #draw.rectangle(uborder, fill='black')
-    draw.text((ux, uy), top_text, fill='white')
-
     w_btxt, h_btxt = draw.textsize(bottom_text)
+    
+    up_rect_size = (w_ttxt+4, h_ttxt)
+    bottom_rect_size = (w_btxt+4, h_btxt)
 
-    bx = (w_img - w_btxt) / 2
-    by = h_img * 0.8
+    urect = Image.new('L', up_rect_size, color='#C2C2C2')
+    brect = Image.new('L', bottom_rect_size, color='#C2C2C2')
 
-  #  draw.rectangle(bborder, fill='black')
-    draw.text((bx, by), bottom_text, fill='white')
+    rtx = int((w_img - up_rect_size[0]) / 2)
+    rty = 1
+
+    rbx = int((w_img - bottom_rect_size[0]) / 2)
+    rby = int(h_img - bottom_rect_size[1])
+
+    ux = int((up_rect_size[0] - w_ttxt) / 2)
+    uy = -1
+
+    bx = int((bottom_rect_size[0] - w_btxt) / 2)
+    by = 0
+
+    urect_draw = ImageDraw.Draw(urect)
+    urect_draw.text((ux, uy), top_text, fill='#0000f0')
+    brect_draw = ImageDraw.Draw(brect)
+    brect_draw.text((bx, by), bottom_text, fill='#0000f0')
+
+    canvas.paste(img)
+    canvas.paste(urect, (rtx, rty))
+    canvas.paste(brect, (rbx, rby))
+
+    return canvas
 
 
-"""
+
 def save_art(img_vals, width):
     try:
         with open('file.txt', 'w') as f:
@@ -61,11 +76,11 @@ def save_art(img_vals, width):
                     f.write(img_vals[i])
     except FileNotFoundError:
         print('[-] File Not Found')
-"""
+
 
 def main():
     img_name = 'picc.png'
-    image = Image.open(img_name, mode='r').convert('L')
+    image = Image.open(img_name, mode='r')
 
     new_w = 120
     image = resize_image(image, new_w)
@@ -73,9 +88,9 @@ def main():
     top_text = 'top text'
     bottom_text = 'bottom text'
 
-    draw_text(image, top_text, bottom_text)
+    canvas = draw_text(image, top_text, bottom_text)
 
-    img_vals = map_to_ascii(image)
+    img_vals = map_to_ascii(canvas)
 
     
     for i in range(len(img_vals)):
@@ -84,7 +99,9 @@ def main():
         else:
             print(img_vals[i], end='')
 
-#    save_art(img_vals, new_w)
+    print('\n')
+
+    save_art(img_vals, new_w)
 
 
 
