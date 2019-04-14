@@ -5,7 +5,7 @@ def resize_image(image, new_w):
     orig_w, orig_h = image.size
     ratio = orig_w / orig_h
     #Spacing between lines is more than spacing between 
-    #characters, so we make it take a percentage of it
+    #characters, so we take a percentage of it
     new_h = int((new_w / ratio) * 0.55)
 
     new_img = image.resize((new_w, new_h)).convert('L')
@@ -19,9 +19,9 @@ def map_to_ascii(image):
 
     img_vals = list(image.getdata())
 
-    for i in range(len(img_vals)):
+    for val in img_vals:
         tmp = 0
-        tmp = int(img_vals[i] / 25.5)
+        tmp = int(val / 25.5)
         trans.append(grays[tmp-1])
 
     return trans
@@ -38,6 +38,7 @@ def draw_text(img, top_text, bottom_text):
     up_rect_size = (w_ttxt+4, h_ttxt)
     bottom_rect_size = (w_btxt+4, h_btxt)
 
+    # Black wasn't working, #C2C2C2 is the darkest I could get
     urect = Image.new('L', up_rect_size, color='#C2C2C2')
     brect = Image.new('L', bottom_rect_size, color='#C2C2C2')
 
@@ -65,45 +66,42 @@ def draw_text(img, top_text, bottom_text):
     return canvas
 
 
-
 def save_art(img_vals, width):
     try:
         with open('file.txt', 'w') as f:
-            for i in range(len(img_vals)):
+            for i, val in enumerate(img_vals):
                 if i % width == 0:
                     f.write('\n')
                 else:
-                    f.write(img_vals[i])
+                    f.write(val)
     except FileNotFoundError:
         print('[-] File Not Found')
 
 
 def main():
-    img_name = 'picc.png'
+    img_name = 'pic.png'
     image = Image.open(img_name, mode='r')
 
     new_w = 120
     image = resize_image(image, new_w)
 
-    top_text = 'top text'
-    bottom_text = 'bottom text'
+    top_text = input('Top Text : ')
+    bottom_text = input('Bottom Text : ')
 
     canvas = draw_text(image, top_text, bottom_text)
 
     img_vals = map_to_ascii(canvas)
 
     
-    for i in range(len(img_vals)):
+    for i, val in enumerate(img_vals):
         if i % new_w == 0:
             print()
         else:
-            print(img_vals[i], end='')
+            print(val, end='')
 
     print('\n')
 
     save_art(img_vals, new_w)
-
-
 
 
 if __name__ == '__main__':
