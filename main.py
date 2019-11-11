@@ -1,6 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
 
-
 def resize_image(image, new_w):
     orig_w, orig_h = image.size
     ratio = orig_w / orig_h
@@ -26,49 +25,47 @@ def map_to_ascii(image):
 
     return trans
 
-
 def draw_text(img, top_text, bottom_text):
     canvas = Image.new('L', img.size, 'black')
     draw = ImageDraw.Draw(canvas)
 
-    w_img, h_img = img.size
-    w_ttxt, h_ttxt = draw.textsize(top_text)
-    w_btxt, h_btxt = draw.textsize(bottom_text)
+    img_w, img_h = img.size
+    top_text_w, top_text_h = draw.textsize(top_text)
+    bottom_text_w, h_btxt = draw.textsize(bottom_text)
     
-    up_rect_size = (w_ttxt+4, h_ttxt)
-    bottom_rect_size = (w_btxt+4, h_btxt)
+    upper_rect_size = (top_text_w+4, top_text_h)
+    bottom_rect_size = (bottom_text_w+4, h_btxt)
 
     # Black wasn't working, #C2C2C2 is the darkest I could get
-    urect = Image.new('L', up_rect_size, color='#C2C2C2')
-    brect = Image.new('L', bottom_rect_size, color='#C2C2C2')
+    upper_rect = Image.new('L', upper_rect_size, color='#C2C2C2')
+    bottom_rect = Image.new('L', bottom_rect_size, color='#C2C2C2')
 
-    rtx = int((w_img - up_rect_size[0]) / 2)
-    rty = 1
+    rect_top_x = int((img_w - upper_rect_size[0]) / 2)
+    rect_top_y = 1
 
-    rbx = int((w_img - bottom_rect_size[0]) / 2)
-    rby = int(h_img - bottom_rect_size[1])
+    rect_bottom_x = int((img_w - bottom_rect_size[0]) / 2)
+    rect_bottom_y = int(img_h - bottom_rect_size[1])
 
-    ux = int((up_rect_size[0] - w_ttxt) / 2)
+    ux = int((upper_rect_size[0] - top_text_w) / 2)
     uy = -1
 
-    bx = int((bottom_rect_size[0] - w_btxt) / 2)
+    bx = int((bottom_rect_size[0] - bottom_text_w) / 2)
     by = 0
 
-    urect_draw = ImageDraw.Draw(urect)
+    urect_draw = ImageDraw.Draw(upper_rect)
     urect_draw.text((ux, uy), top_text, fill='#0000f0')
-    brect_draw = ImageDraw.Draw(brect)
+    brect_draw = ImageDraw.Draw(bottom_rect)
     brect_draw.text((bx, by), bottom_text, fill='#0000f0')
 
     canvas.paste(img)
-    canvas.paste(urect, (rtx, rty))
-    canvas.paste(brect, (rbx, rby))
+    canvas.paste(upper_rect, (rect_top_x, rect_top_y))
+    canvas.paste(bottom_rect, (rect_bottom_x, rect_bottom_y))
 
     return canvas
 
-
 def save_art(img_vals, width):
     try:
-        with open('file.txt', 'w') as f:
+        with open('pic.txt', 'w') as f:
             for i, val in enumerate(img_vals):
                 if i % width == 0:
                     f.write('\n')
@@ -76,7 +73,6 @@ def save_art(img_vals, width):
                     f.write(val)
     except FileNotFoundError:
         print('[-] File Not Found')
-
 
 def main():
     img_name = 'pic.png'
@@ -100,9 +96,7 @@ def main():
             print(val, end='')
 
     print('\n')
-
     save_art(img_vals, new_w)
-
 
 if __name__ == '__main__':
     main()
